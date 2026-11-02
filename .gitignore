@@ -1,0 +1,11 @@
+target/
+out/
+out-a/
+out-b/
+*.log
+
+# Local work, not part of the release
+Research_and_Development/
+Admin/
+reports/
+*.csv.bak

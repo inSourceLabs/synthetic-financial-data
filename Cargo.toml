@@ -1,0 +1,8 @@
+[package]
+name = "synthetic-financial-data"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "Deterministic synthetic banking and insurance dataset for testing a governed read-only SQL gateway"
+
+[dependencies]

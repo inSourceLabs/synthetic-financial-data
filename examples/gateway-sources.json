@@ -1,0 +1,31 @@
+{
+  "sources": [
+    {
+      "id": "synth_retail_banking",
+      "engine": "postgres",
+      "description": "Synthetic retail banking dataset. No real institutions, no personal data.",
+      "dsn": "host=127.0.0.1 port=5433 dbname=synthetic_retail_bank user=agent_ro",
+      "timeout_s": 30,
+      "columns_deny": ["phone", "national_id"],
+      "column_formats": []
+    },
+    {
+      "id": "synth_non_life",
+      "engine": "postgres",
+      "description": "Synthetic non-life (general) insurance dataset. No real institutions, no personal data.",
+      "dsn": "host=127.0.0.1 port=5433 dbname=synthetic_non_life user=agent_ro",
+      "timeout_s": 30,
+      "columns_deny": [],
+      "column_formats": []
+    },
+    {
+      "id": "synth_life",
+      "engine": "postgres",
+      "description": "Synthetic life insurance underwriting inputs: policy issue data and assumption tables. No real institutions, no personal data.",
+      "dsn": "host=127.0.0.1 port=5433 dbname=synthetic_life user=agent_ro",
+      "timeout_s": 30,
+      "columns_deny": [],
+      "column_formats": []
+    }
+  ]
+}
