@@ -177,6 +177,44 @@ every call.
 - The generator checks its own foreign keys before writing. If a child row points
   at a parent that does not exist, it exits 1 rather than emitting the file.
 
+## Releases
+
+Each release attaches the generated datasets as archives, so the data can be used without
+building anything. Every archive contains `schema.sql`, `seed.sql`, `manifest.csv`, `csv/`
+and a `MANIFEST.txt` recording the commit, seed, row counts and per-file checksums.
+
+| Archive | Rows | Compressed size |
+| --- | --- | --- |
+| `retail_banking-0.1.0.tar.gz` | 228,792 | 8.6 MB |
+| `non_life-0.1.0.tar.gz` | 88,070 | 3.0 MB |
+| `life-0.1.0.tar.gz` | 9,685 | 0.5 MB |
+| `all-datasets-0.1.0.tar.gz` | 326,547 | 12.1 MB |
+
+### Verify an archive
+
+```sh
+gpg --import keys/inSource-public.asc
+sha256sum retail_banking-0.1.0.tar.gz     # compare with the checksums in the release notes
+gpg --verify retail_banking-0.1.0.tar.gz.asc retail_banking-0.1.0.tar.gz
+```
+
+The signing key is the one that signs the commits: `DC74A1A3EC37F13DC7E85ABE13465C6AFB9369DA`,
+UID `inSource <333550633+inSourceLabs@users.noreply.github.com>`, expires 2028-11-01.
+
+### Reproduce an archive
+
+```sh
+git checkout v0.1.0
+cargo build --release
+cargo run --release -- --out out --dataset all --seed 20260101   # defaults, no extra flags
+tar --format=gnu --owner=0 --group=0 --mtime='2026-11-03T00:00:00Z' \
+    -czf retail_banking-0.1.0.tar.gz -C out/retail_banking .
+```
+
+The generator is deterministic and the packaging flags are fixed, so the archive checksums are
+reproducible. `.gitattributes` keeps LF line endings so a Windows clone does not change the
+bytes.
+
 ## Why Rust
 
 No third-party crates, one binary, and exact arithmetic: money and rates are built
