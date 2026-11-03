@@ -194,12 +194,11 @@ and a `MANIFEST.txt` recording the commit, seed, row counts and per-file checksu
 
 ```sh
 gpg --import keys/inSource-public.asc
-sha256sum retail_banking-0.1.0.tar.gz     # compare with the checksums in the release notes
 gpg --verify retail_banking-0.1.0.tar.gz.asc retail_banking-0.1.0.tar.gz
 ```
 
-The signing key is the one that signs the commits: `DC74A1A3EC37F13DC7E85ABE13465C6AFB9369DA`,
-UID `inSource <333550633+inSourceLabs@users.noreply.github.com>`, expires 2028-11-01.
+Signing key `DC74A1A3EC37F13DC7E85ABE13465C6AFB9369DA`; the public key is in the repo at
+`keys/inSource-public.asc`. The sha256 of every archive is listed in the release notes.
 
 ### Reproduce an archive
 
