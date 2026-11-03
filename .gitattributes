@@ -1,0 +1,11 @@
+# Generated data and scripts must have identical bytes on every platform.
+# Git's default line-ending conversion would rewrite LF to CRLF on a Windows
+# clone, which breaks byte-for-byte determinism and sql_csv_check.py.
+* text=auto eol=lf
+*.sql text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=lf
+*.md text eol=lf
+*.rs text eol=lf

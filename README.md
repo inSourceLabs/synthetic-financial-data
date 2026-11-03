@@ -9,21 +9,41 @@ joins. Every table has a primary key and real foreign keys.
 
 ## Requirements
 
-- Rust 1.99, pinned in `rust-toolchain.toml`. No third-party crates.
-- PostgreSQL 16+ only if you want to load the SQL. The CSVs need nothing.
-- `psql` for `scripts/load.sh` (it looks for it in `/usr/lib/postgresql/17/bin`,
-  `/usr/lib/postgresql/16/bin` and `/usr/local/bin`; set `PGBIN` if it is elsewhere).
-- `curl` and `jq` for `scripts/verify.sh`, and python3 (standard library only) for
-  `scripts/sql_csv_check.py`.
-- Linux and macOS work. The scripts are bash.
+Tested on Linux x86_64 (Rust 1.99.1, PostgreSQL 17, GNU bash 5.2). macOS and Windows are
+untested: the last two columns say what to expect, not what has been verified.
+
+| Component | Needed for | Linux (tested) | macOS (not tested) | Windows (not tested) |
+| --- | --- | --- | --- | --- |
+| Rust 1.99, pinned in `rust-toolchain.toml` | the generator | yes | expected, rustup supports it | expected, rustup supports it |
+| bash | `generate.sh`, `check.sh`, `load.sh`, `verify.sh` | GNU bash 5.2 | bash 3.2 is shipped and zsh is the default shell; invoke with `bash` | Git Bash or WSL |
+| python3, standard library only | `sql_csv_check.py` | yes | expected | expected |
+| `psql` | `load.sh` only | yes, PostgreSQL 17 | expected | expected, set `PGBIN` |
+| `curl` and `jq` | `verify.sh` only | yes | expected | curl ships with Windows 10+, jq must be installed |
+
+The generator is the portable part: Rust standard library only, no C bindings. The helper
+scripts are the part that assumes a Unix shell.
+
+### Windows and macOS
+
+Neither platform has been tested. What to expect:
+
+- `cargo build --release` should work on both; there are no dependencies to link.
+- Output is plain text with LF line endings. `.gitattributes` pins LF so a Windows clone does
+  not convert it to CRLF.
+- The four helper scripts are bash. Without one, run the generator directly:
+  `cargo run --release -- --out out --dataset all --seed 20260101`
+- `load.sh` searches `/usr/lib/postgresql/17/bin`, `/usr/lib/postgresql/16/bin` and
+  `/usr/local/bin` for `psql`. Set `PGBIN` where those paths do not apply.
+- Determinism is byte level. Compare with `cmp` on Unix-like systems, or
+  `certutil -hashfile` / `fc /b` on Windows.
 
 ## Three datasets
 
-| dataset | tables | what it models |
+| Dataset | Tables | What it models |
 | --- | --- | --- |
 | `retail_banking` | `branches`, `customers`, `accounts`, `transactions`, `loans`, `kyc_reviews` | a retail bank: accounts per customer, transaction ledger, loan book, AML review history |
 | `non_life` | `offices`, `policyholders`, `policies`, `coverages`, `exclusions`, `claims`, `claim_adjustments`, `endorsements` | a general non-life carrier, lines of business per Solvency II Annex I |
-| `life` | `offices`, `policyholders`, `policies`, `mortality_assumptions`, `morbidity_assumptions`, `lapse_assumptions`, `expense_assumptions`, `discount_curve` | a UK life insurance carrier's underwriting inputs: policy issue data plus the assumption tables a model consumes |
+| `life` | `offices`, `policyholders`, `policies`, `mortality_assumptions`, `morbidity_assumptions`, `lapse_assumptions`, `expense_assumptions`, `discount_curve` | a life insurance carrier's underwriting inputs: policy issue data plus the assumption tables a model consumes |
 
 `retail_banking`, `non_life` and `life` are the canonical labels. `banking`,
 `insurance` and `both` are accepted as shorthand so an older command still runs.
@@ -101,8 +121,10 @@ password; local trust auth). Override with `PORT`, `PGUSER`, `PGBIN`, `OUT`,
 
 ## Query it through a gateway
 
-`pg-guardrails` is a read-only MCP gateway for SQL: statement policy, row caps,
-column masking, audit trail. It is optional; nothing here requires it.
+[`pg-guardrails`](https://github.com/inSourceLabs/pg-guardrails) is a read-only MCP gateway
+for SQL: statement policy, row caps, column masking, audit trail. It is optional; nothing
+here requires it. That repository is not populated yet, so the gateway commands below work
+once it is.
 
 Register each dataset as its own source so a cross-source join fails by design:
 

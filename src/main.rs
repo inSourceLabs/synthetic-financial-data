@@ -944,7 +944,7 @@ const OCCUPATION_CLASSES: [&str; 6] = [
 ];
 
 /// Rates are written as exact decimal strings from integer micro-units, so no
-/// float ever reaches the output files. The table shapes follow what a UK life
+/// float ever reaches the output files. The table shapes follow what a life
 /// carrier feeds a model: mortality by gender, smoking status and age; morbidity
 /// by product and age; lapse by product and duration; expense by product and
 /// months in force; a discount curve by month. The numbers are invented here, not

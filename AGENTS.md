@@ -23,8 +23,8 @@ the output is useful as SQL or as CSV on its own.
 
 Before adding fields for an industry or a line of business, write the reasoning
 down in `Research_and_Development/YYYY-MM-DD_<topic>.md` with the source URL,
-authors, publication date, fetch date and method. UK regulation is the baseline:
-Solvency II Annex I for non-life lines, Annex II for life classes, FCA and PRA
+authors, publication date, fetch date and method. European and UK regulation is the
+baseline: Solvency II Annex I for non-life lines, Annex II for life classes, FCA and PRA
 expectations for banking records.
 
 Do not emit model outputs (best estimate liability, development triangles, loss
