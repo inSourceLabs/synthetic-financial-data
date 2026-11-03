@@ -4,6 +4,7 @@
 #   ./scripts/ci.sh              # rust gates, licence gate, determinism, data checks, hygiene
 #   ./scripts/ci.sh fast         # rust gates and hygiene only; nothing is generated
 #   ./scripts/ci.sh full         # the above, plus a Postgres load and a gateway round trip
+#   ./scripts/ci.sh cross        # build for Windows and compare the output through Wine
 #   ./scripts/ci.sh --no-advisories  # skip the RustSec fetch; runs offline
 #
 # Everything runs on this machine against this checkout. The only network access
@@ -11,7 +12,8 @@
 # which --no-advisories turns off.
 #
 # Requires: cargo, rustfmt, clippy, python3, git. cargo-deny is optional here
-# (the crate has no dependencies) and a fallback check runs without it.
+# (the crate has no dependencies) and a fallback check runs without it. The cross
+# mode needs wine and the x86_64-pc-windows-gnu target.
 
 set -uo pipefail
 
@@ -26,6 +28,7 @@ for arg in "$@"; do
   case "$arg" in
     fast) MODE=fast ;;
     full) MODE=full ;;
+    cross) MODE=cross ;;
     all) MODE=all ;;
     --no-advisories) ADVISORIES=0 ;;
     --no-log) NO_LOG=1 ;;
@@ -183,6 +186,20 @@ if python3 scripts/hygiene.py; then
   record "hygiene" PASS
 else
   record "hygiene" FAIL "see the hygiene output above"
+fi
+
+# ---------------------------------------------------------------- cross platform
+if [ "$MODE" = "cross" ]; then
+  echo "--- Windows build through Wine"
+  out="$(bash scripts/windows_check.sh 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    record "windows build under wine" PASS
+    echo "  ok"
+  else
+    record "windows build under wine" FAIL "$(echo "$out" | tail -n 3 | tr '\n' ' ')"
+    echo "  FAIL"
+  fi
 fi
 
 # ---------------------------------------------------------------- gateway round trip

@@ -79,7 +79,7 @@ def check_links(path: Path, text: str) -> None:
         if target.startswith(("http://", "https://", "mailto:")) or target.startswith("#"):
             continue
         target = target.split("#")[0]
-        if target and not (REPO / target).exists():
+        if target and not (path.parent / target).resolve().exists():
             fails.append(f"{rel(path)}: link target does not exist: {target}")
     without_links = re.sub(r"\[([^\]]*)\]\(([^)]+)\)", " ", text)
     for match in re.finditer(r"`(scripts/[^`\s]+|src/[^`\s]+|examples/[^`\s]+|keys/[^`\s]+)`", without_links):
