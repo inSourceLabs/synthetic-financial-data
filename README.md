@@ -14,11 +14,11 @@ untested: the last two columns say what to expect, not what has been verified.
 
 | Component | Needed for | Linux (tested) | macOS (not tested) | Windows (not tested) |
 | --- | --- | --- | --- | --- |
-| Rust 1.99, pinned in `rust-toolchain.toml` | the generator | yes | expected, rustup supports it | expected, rustup supports it |
-| bash | `generate.sh`, `check.sh`, `load.sh`, `verify.sh` | GNU bash 5.2 | bash 3.2 is shipped and zsh is the default shell; invoke with `bash` | Git Bash or WSL |
-| python3, standard library only | `sql_csv_check.py` | yes | expected | expected |
-| `psql` | `load.sh` only | yes, PostgreSQL 17 | expected | expected, set `PGBIN` |
-| `curl` and `jq` | `verify.sh` only | yes | expected | curl ships with Windows 10+, jq must be installed |
+| Rust 1.99, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) | the generator | yes | expected, rustup supports it | expected, rustup supports it |
+| bash | [`generate.sh`](scripts/generate.sh), [`ci.sh`](scripts/ci.sh), [`load.sh`](scripts/load.sh), [`verify.sh`](scripts/verify.sh) | GNU bash 5.2 | bash 3.2 is shipped and zsh is the default shell; invoke with `bash` | Git Bash or WSL |
+| python3, standard library only | [`sql_csv_check.py`](scripts/sql_csv_check.py), [`data_check.py`](scripts/data_check.py), [`hygiene.py`](scripts/hygiene.py) | yes | expected | expected |
+| `psql` | [`load.sh`](scripts/load.sh) only | yes, PostgreSQL 17 | expected | expected, set `PGBIN` |
+| `curl` and `jq` | [`verify.sh`](scripts/verify.sh) only | yes | expected | curl ships with Windows 10+, jq must be installed |
 
 The generator is the portable part: Rust standard library only, no C bindings. The helper
 scripts are the part that assumes a Unix shell.
@@ -105,9 +105,14 @@ serialisation (quoting, escaping, ordering, column names), not the data:
 It parses every `INSERT` in `seed.sql`, compares it cell by cell with the matching
 CSV, and exits non-zero on the first mismatch.
 
+[`scripts/data_check.py`](scripts/data_check.py) checks the other direction: the row
+counts in `manifest.csv` against the CSV and the SQL, and every identity column
+against the placeholder pattern, so no plausible name, phone number or email can
+appear in a dataset.
+
 ## Load it into Postgres
 
-`load.sh` creates one database per dataset, applies the schema, loads the seed, and
+[`load.sh`](scripts/load.sh) creates one database per dataset, applies the schema, loads the seed, and
 grants one role SELECT access only. It is idempotent: re-running reloads the tables.
 
 ```sh
@@ -138,7 +143,7 @@ pg-guardrails source test --config sources.json --id synth_retail_banking
 pg-guardrails http --config sources.json --port 8413
 ```
 
-`examples/gateway-sources.json` is the same registry in full. It declares no
+[`examples/gateway-sources.json`](examples/gateway-sources.json) is the same registry in full. It declares no
 `column_formats`: amounts print as stored.
 
 Then:
@@ -147,7 +152,7 @@ Then:
 MCP_URL=http://127.0.0.1:8413/mcp SOURCE=synth_retail_banking DATASET=retail_banking ./scripts/verify.sh
 ```
 
-`verify.sh` reads the table list and expected row counts from the manifest, then
+[`verify.sh`](scripts/verify.sh) reads the table list and expected row counts from the manifest, then
 checks the gateway: tables present, counts correct, a join plus aggregate returns a
 real number, masking hides `phone` and `national_id`, the row cap applies, a
 `DELETE` and a stacked statement are refused, and the audit trail has a record for
@@ -155,9 +160,18 @@ every call.
 
 ## Gate set
 
+Every gate runs locally. There is no build service and nothing to configure on a
+hosting platform.
+
 ```sh
-./scripts/check.sh    # cargo fmt --check, clippy -D warnings, cargo test, cargo deny
+./scripts/ci.sh              # rust gates, licence gate, determinism, data checks, hygiene
+./scripts/ci.sh fast         # rust gates and hygiene; nothing is generated
+./scripts/ci.sh full         # also loads the datasets into Postgres and runs verify.sh
 ```
+
+`ci.sh` runs the generator twice with the same seed and compares the output byte for
+byte, then checks the SQL against the CSV and the manifests, then audits the tracked
+files (no machine paths, no credentials, no CRLF, no broken links).
 
 ## Determinism and what is not real
 
@@ -198,7 +212,8 @@ gpg --verify retail_banking-0.1.0.tar.gz.asc retail_banking-0.1.0.tar.gz
 ```
 
 Signing key `DC74A1A3EC37F13DC7E85ABE13465C6AFB9369DA`; the public key is in the repo at
-`keys/inSource-public.asc`. The sha256 of every archive is listed in the release notes.
+[`keys/inSource-public.asc`](keys/inSource-public.asc). The sha256 of every archive is listed
+in the release notes.
 
 ### Reproduce an archive
 
@@ -222,4 +237,4 @@ byte for byte. Determinism is a property of the generator, not of the machine.
 
 ## Licence
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0. See [`LICENSE`](LICENSE).

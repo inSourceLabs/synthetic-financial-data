@@ -2,7 +2,15 @@
 
 This repository generates synthetic banking, non-life insurance and life
 underwriting datasets. It is standalone: nothing here depends on a gateway, and
-the output is useful as SQL or as CSV on its own.
+the output is useful as SQL or as CSV on its own. See [`README.md`](README.md) for the
+datasets and the release procedure.
+
+## Gates
+
+[`scripts/ci.sh`](scripts/ci.sh) is the whole gate set, run locally: format, lint,
+tests, licence audit, two generations compared byte for byte, the SQL/CSV and manifest
+cross-checks, and a hygiene pass over the tracked files. There is no build service and
+no runner to configure.
 
 ## What matters when changing the generator
 
@@ -32,7 +40,7 @@ ratios). Emit inputs. A projection without the model that produced it is noise.
 
 ## Licence and dependency policy
 
-Apache-2.0. Standard library only. `deny.toml` enforces a permissive-only licence
+Apache-2.0. Standard library only. [`deny.toml`](deny.toml) enforces a permissive-only licence
 allowlist so a dependency added later cannot bring a restrictive licence in
 silently. Never add `psycopg`, `psycopg2` or any GPL/AGPL/LGPL crate.
 
