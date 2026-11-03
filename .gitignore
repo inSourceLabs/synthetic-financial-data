@@ -2,6 +2,8 @@ target/
 out/
 out-a/
 out-b/
+out-rel/
+dist/
 *.log
 
 # Local work, not part of the release
